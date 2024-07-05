@@ -1,0 +1,136 @@
+-- Create the database
+CREATE DATABASE company_db;
+
+-- Use the newly created database
+USE company_db;
+
+-- Create the departments table
+CREATE TABLE departments (
+    deptno INT PRIMARY KEY,
+    dname VARCHAR(50),
+    loc VARCHAR(50)
+);
+
+-- Insert data into the departments table
+INSERT INTO departments (deptno, dname, loc) VALUES
+(10, 'ACCOUNTING', 'NEW YORK'),
+(20, 'RESEARCH', 'DALLAS'),
+(30, 'SALES', 'CHICAGO'),
+(40, 'OPERATIONS', 'BOSTON');
+
+-- Create the employees table
+CREATE TABLE employees (
+    empno INT PRIMARY KEY,
+    ename VARCHAR(50),
+    job VARCHAR(50),
+    mgr INT,
+    hiredate DATE,
+    sal INT,
+    comm INT,
+    deptno INT,
+    FOREIGN KEY (deptno) REFERENCES departments(deptno)
+);
+
+-- Insert data into the employees table
+INSERT INTO employees (empno, ename, job, mgr, hiredate, sal, comm, deptno) VALUES
+(7369, 'SMITH', 'CLERK', 7902, '1980-12-17', 800, NULL, 20),
+(7499, 'ALLEN', 'SALESMAN', 7698, '1981-02-20', 1600, 300, 30),
+(7521, 'WARD', 'SALESMAN', 7698, '1981-02-22', 1250, 500, 30),
+(7566, 'JONES', 'MANAGER', 7839, '1981-04-02', 2975, NULL, 20),
+(7654, 'MARTIN', 'SALESMAN', 7698, '1981-09-28', 1250, 1400, 30),
+(7698, 'BLAKE', 'MANAGER', 7839, '1981-05-01', 2850, NULL, 30),
+(7782, 'CLARK', 'MANAGER', 7839, '1981-06-09', 2450, NULL, 10),
+(7788, 'SCOTT', 'ANALYST', 7566, '1987-04-19', 3000, NULL, 20),
+(7839, 'KING', 'PRESIDENT', NULL, '1981-11-17', 5000, NULL, 10),
+(7844, 'TURNER', 'SALESMAN', 7698, '1981-09-08', 1500, 0, 30),
+(7876, 'ADAMS', 'CLERK', 7788, '1987-05-23', 1100, NULL, 20),
+(7900, 'JAMES', 'CLERK', 7698, '1981-12-03', 950, NULL, 30),
+(7902, 'FORD', 'ANALYST', 7566, '1981-12-03', 3000, NULL, 20),
+(7934, 'MILLER', 'CLERK', 7782, '1982-01-23', 1300, NULL, 10);
+
+-- 51. WAQTD NAME OF THE EMPLOYEES EARNING SALARYMORE THAN THE SALESMAN
+
+select ename,job,sal from employees where sal>(select max(sal) from employees where job='salesman');
+
+-- 52. WAQTD DETAILS OF THE EMPLOYEES HIRED AFTER ALL THE CLERKS
+select * from employees where hiredate >all (select hiredate from employees where job='salesman');
+select max(hiredate) from employees where job='salesman';
+
+-- 53. WAQTD NAME AND SALARY FOR ALL THE EMPLOYEES IF THEY ARE EARNING LESS THAN ATLEST A MANAGER
+select ename,sal from employee2e67xs where sal<=any (select sal from employees where job='manager');
+
+-- 54. WAQTD NAME AND HIREDATE OF EMPLOYEES HIRED BEFORE ALL THE MANAGERS
+select ename,hiredate from employees where hiredate<all (select hiredate from employees where job='manager');
+
+-- 55. WAQTD NAMES OF THE EMPLOYEES HIRED AFTER ALL THE MANAGERS AND EARNING SALARY MORE THAN ALL THE CLERKS
+select ename from employees where hiredate>all(select hiredate from employees where job='manager') and sal>all (select sal from employees where job='clerk');
+
+-- 56. WAQTD DETAILS OF THE EMPLOYEES WORKING AS CLERK AND HIRED BEFORE ATLEST A SALESMAN
+select * from employees where job='clerk' and hiredate<any(select hiredate from employees where job='salesman');
+
+-- 57. WAQTD DETAILS OF EMPLOYEES WORKING IN ACCOUNTING OR SALES
+select * from employees e,departments d where e.deptno=d.deptno and d.dname in ('sales','accounting');
+
+-- 58. WAQTD DEPARTMENT NAMES OF THE EMPOYEES WITH NAME SMITH, KING AND MILLER
+select d.dname,e.ename from employees e,departments d where d.deptno=e.deptno and e.ename in ('smith','king','miller');
+
+-- 59. WAQTD DETAILS OF EMPLOYEES WORKING NEWYORK OR CHICAGO
+select * from employees e,departments d where e.deptno=d.deptno and d.loc in ('new york','chicago');
+select * from employees where deptno in(select deptno from departments where loc in ('new york','chicago'));
+
+-- 60. WAQTD EMP NAMES IF EMPLOYEES ARE HIRED AFTER ALL THE EMPLOYEES OF DEPT 10
+select ename,deptno from employees where hiredate >all (select hiredate from employees where deptno=10);
+
+
+select min(sal) from employees where sal >(select min(sal) from employees where sal >(select min(sal) from employees));
+
+-- cross joint or cartision joint 
+select * from employees cross join departments;
+
+select * from employees inner join departments;
+
+select e.ename,d.dname from employees e inner join departments d on d.deptno=e.deptno;
+
+select e.ename,d.loc from employees e inner join departments d on d.deptno=e.deptno and e.job='manager';
+
+select e.ename,d.loc from employees e, departments d where  d.deptno=e.deptno and e.job='manager';
+
+select e.ename,e.sal,d.dname from employees e inner join departments d on d.deptno=e.deptno;
+
+select e.ename,e.sal from employees e inner join departments d on d.deptno=e.deptno and d.dname='accounting';
+
+select e.ename,e.job from employees e inner join departments d on d.deptno=e.deptno and e.job like 's%' and dname like 's%';
+
+select * from employees e right join departments d on d.deptno=e.deptno;
+
+select * from employees e left join departments d on d.deptno=e.deptno;
+
+select * from employees e natural join departments d ;
+
+select * from employees e right join departments d on d.deptno=e.deptno
+union
+select * from employees e left join departments d on d.deptno=e.deptno;
+
+
+select e.ename,e.sal,d.dname from employees e natural join departments d where e.deptno in (select deptno from employees where job='president') order by sal desc;
+
+select d.dname,avg(sal) from employees e natural join departments d  where e.hiredate >'1980-12-31' group by d.dname order by avg(sal) desc;
+
+select e.ename,e.hiredate,d.dname  
+from employees e natural join departments d 
+where (e.deptno,e.hiredate) in (select deptno,hiredate from employees group by deptno,hiredate having count(*)>1);
+
+select deptno,hiredate from employees group by deptno,hiredate having count(*)>1;
+
+select e1.ename,e1.hiredate,e2.ename,d.dname  
+from employees e1 natural join departments d 
+join employees e2 on e1.deptno=e2.deptno and e1.hiredate=e2.hiredate and e1.empno <> e2.empno;
+
+
+
+
+
+
+
+
+
